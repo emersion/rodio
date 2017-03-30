@@ -11,6 +11,7 @@ use Source;
 mod flac;
 mod vorbis;
 mod wav;
+mod mp3;
 
 /// Source of audio samples from decoding a file.
 ///
@@ -23,6 +24,7 @@ enum DecoderImpl<R>
     Wav(wav::WavDecoder<R>),
     Vorbis(vorbis::VorbisDecoder<R>),
     Flac(flac::FlacDecoder<R>),
+    Mp3(mp3::Mp3Decoder<R>),
 }
 
 impl<R> Decoder<R>
@@ -46,6 +48,13 @@ impl<R> Decoder<R>
             }
         };
 
+        let data = match mp3::Mp3Decoder::new(data) {
+            Err(data) => data,
+            Ok(decoder) => {
+                return Ok(Decoder(DecoderImpl::Mp3(decoder)));
+            }
+        };
+
         if let Ok(decoder) = vorbis::VorbisDecoder::new(data) {
             return Ok(Decoder(DecoderImpl::Vorbis(decoder)));
         }
@@ -65,6 +74,7 @@ impl<R> Iterator for Decoder<R>
             DecoderImpl::Wav(ref mut source) => source.next().map(|s| s.to_f32()),
             DecoderImpl::Vorbis(ref mut source) => source.next().map(|s| s.to_f32()),
             DecoderImpl::Flac(ref mut source) => source.next().map(|s| s.to_f32()),
+            DecoderImpl::Mp3(ref mut source) => source.next().map(|s| s.to_f32()),
         }
     }
 
@@ -74,6 +84,7 @@ impl<R> Iterator for Decoder<R>
             DecoderImpl::Wav(ref source) => source.size_hint(),
             DecoderImpl::Vorbis(ref source) => source.size_hint(),
             DecoderImpl::Flac(ref source) => source.size_hint(),
+            DecoderImpl::Mp3(ref source) => source.size_hint(),
         }
     }
 }
@@ -87,6 +98,7 @@ impl<R> Source for Decoder<R>
             DecoderImpl::Wav(ref source) => source.get_current_frame_len(),
             DecoderImpl::Vorbis(ref source) => source.get_current_frame_len(),
             DecoderImpl::Flac(ref source) => source.get_current_frame_len(),
+            DecoderImpl::Mp3(ref source) => source.get_current_frame_len(),
         }
     }
 
@@ -96,6 +108,7 @@ impl<R> Source for Decoder<R>
             DecoderImpl::Wav(ref source) => source.get_channels(),
             DecoderImpl::Vorbis(ref source) => source.get_channels(),
             DecoderImpl::Flac(ref source) => source.get_channels(),
+            DecoderImpl::Mp3(ref source) => source.get_channels(),
         }
     }
 
@@ -105,6 +118,7 @@ impl<R> Source for Decoder<R>
             DecoderImpl::Wav(ref source) => source.get_samples_rate(),
             DecoderImpl::Vorbis(ref source) => source.get_samples_rate(),
             DecoderImpl::Flac(ref source) => source.get_samples_rate(),
+            DecoderImpl::Mp3(ref source) => source.get_samples_rate(),
         }
     }
 
@@ -114,6 +128,7 @@ impl<R> Source for Decoder<R>
             DecoderImpl::Wav(ref source) => source.get_total_duration(),
             DecoderImpl::Vorbis(ref source) => source.get_total_duration(),
             DecoderImpl::Flac(ref source) => source.get_total_duration(),
+            DecoderImpl::Mp3(ref source) => source.get_total_duration(),
         }
     }
 }

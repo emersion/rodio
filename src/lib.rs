@@ -86,6 +86,8 @@ extern crate hound;
 #[macro_use]
 extern crate lazy_static;
 extern crate lewton;
+extern crate simplemad;
+extern crate simplemad_sys;
 
 pub use cpal::{Endpoint, get_endpoints_list, get_default_endpoint};
 
