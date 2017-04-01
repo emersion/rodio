@@ -74,6 +74,9 @@ impl<R> Iterator for Mp3Decoder<R> where R: Read + Seek {
             self.current_frame_channel = 0;
             self.current_frame_sample_pos = 0;
         }
+        if self.current_frame.samples[0].len() == 0 {
+            return None
+        }
 
         // getting the sample and converting it from fixed step to i16
         /*let sample = self.current_frame.samples[self.current_frame_channel][self.current_frame_sample_pos].to_raw();
